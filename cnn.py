@@ -49,10 +49,10 @@ class ThreeLayerConvNet(object):
     ############################################################################
     # about 12 lines of code
     C,H,W = input_dim
-
+    self.filter_size = filter_size
     self.params['theta1'] = np.random.normal(loc = 0, scale = weight_scale, size = (num_filters, C, filter_size, filter_size))
     self.params['theta1_0']  = np.zeros(num_filters)
-    self.params['theta2'] = np.random.normal(loc = 0, scale = weight_scale, size = (num_filters*H/2*W/2, hidden_dim))
+    self.params['theta2'] = np.random.normal(loc = 0, scale = weight_scale, size = (int(num_filters*H/2*W/2), hidden_dim))
     self.params['theta2_0']  = np.zeros(hidden_dim)
     self.params['theta3'] = np.random.normal(loc = 0, scale = weight_scale, size = (hidden_dim,num_classes))
     self.params['theta3_0']  = np.zeros(num_classes)
@@ -73,10 +73,15 @@ class ThreeLayerConvNet(object):
     theta1, theta1_0 = self.params['theta1'], self.params['theta1_0']
     theta2, theta2_0 = self.params['theta2'], self.params['theta2_0']
     theta3, theta3_0 = self.params['theta3'], self.params['theta3_0']
+    # print(X )
+    if theta1 is None:
+      print(theta2,theta2_0)
+      
     
     # pass conv_param to the forward pass for the convolutional layer
-    filter_size = theta1.shape[2]
-    conv_param = {'stride': 1, 'pad': (filter_size - 1) / 2}
+    # if theta1 == None:
+    #   print (X)
+    conv_param = {'stride': 1, 'pad': (self.filter_size - 1) / 2}
 
     # pass pool_param to the forward pass for the max-pooling layer
     pool_param = {'pool_height': 2, 'pool_width': 2, 'stride': 2}
@@ -109,11 +114,12 @@ class ThreeLayerConvNet(object):
     ############################################################################
     # about 12 lines of code
     loss, dout = softmax_loss(scores, y)
-    loss += np.sum(np.square([theta1,theta2,theta3])) *.5 * self.reg
+    for th in [theta1,theta2,theta3]:
+      loss += np.sum(np.square(th)) *.5 * self.reg
 
     dx3, grads['theta3'], grads["theta3_0"] = affine_backward(dout, cache3)
     dx2, grads['theta2'], grads["theta2_0"] = affine_relu_backward(dx3, cache2)
-    dx1, grads['theta2'], grads["theta2_0"] = conv_relu_pool_backward(dx2, cache1)
+    dx1, grads['theta1'], grads["theta1_0"] = conv_relu_pool_backward(dx2, cache1)
     grads['theta3'] += self.reg * theta3
     grads['theta2'] += self.reg * theta2
     grads['theta1'] += self.reg * theta1

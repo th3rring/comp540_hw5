@@ -20,12 +20,21 @@ def affine_forward(x, theta, theta0):
   - cache: (x, theta, theta0)
   """
   out = None
+  m = x.shape[0]
+  d = np.product(x.shape[1:])
   #############################################################################
   # TODO: Implement the affine forward pass. Store the result in out. You     #
   # will need to reshape the input into rows.                                 #
   #############################################################################
   # 2 lines of code expected
-  pass
+  # X = np.reshape(x, (m, d))
+  x_reshape = x.reshape(x.shape[0], theta.shape[0])
+  out =  x_reshape @ theta + theta0
+  #out = x.reshape(x.shape[0], theta.shape[0]).dot(theta) + theta0
+
+  # out = theta.T @ X.T + np.repeat(np.atleast_2d(theta0), m, axis=0).T
+  # out = out.T
+  
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -51,12 +60,20 @@ def affine_backward(dout, cache):
   """
   x, theta, theta0 = cache
   dx, dtheta, dtheta0 = None, None, None
+  m = x.shape[0]
+  d = np.product(x.shape[1:])
   #############################################################################
   # TODO: Implement the affine backward pass.                                 #
   #############################################################################
   # Hint: do not forget to reshape x into (m,d) form
   # 4-5 lines of code expected
-  pass
+  # X = np.reshape(x, (m, d))
+  #dx = (dout @ theta.T).reshape(x.shape)
+  x_reshape = x.reshape(x.shape[0], theta.shape[0])
+  dx = (dout @ theta.T).reshape(x.shape)
+  dtheta = x_reshape.T @ dout
+  dtheta0 = np.sum(dout, axis=0)
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -79,7 +96,7 @@ def relu_forward(x):
   # TODO: Implement the ReLU forward pass.                                    #
   #############################################################################
   # 1 line of code expected
-  pass
+  out = np.where(x > 0, x, 0)
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -103,6 +120,7 @@ def relu_backward(dout, cache):
   # TODO: Implement the ReLU backward pass.                                   #
   #############################################################################
   # 1 line of code expected. Hint: use np.where
+  dx = np.where(cache > 0, dout, 0)
   pass
   #############################################################################
   #                             END OF YOUR CODE                              #

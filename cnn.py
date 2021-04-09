@@ -48,7 +48,14 @@ class ThreeLayerConvNet(object):
     # 'theta3_0' for the weights and biases of the output affine layer.        #
     ############################################################################
     # about 12 lines of code
-    pass
+    C,H,W = input_dim
+
+    self.params['theta1'] = np.random.normal(loc = 0, scale = weight_scale, size = (num_filters, C, filter_size, filter_size))
+    self.params['theta1_0']  = np.zeros(num_filters)
+    self.params['theta2'] = np.random.normal(loc = 0, scale = weight_scale, size = (num_filters*H/2*W/2, hidden_dim))
+    self.params['theta2_0']  = np.zeros(hidden_dim)
+    self.params['theta3'] = np.random.normal(loc = 0, scale = weight_scale, size = (hidden_dim,num_classes))
+    self.params['theta3_0']  = np.zeros(num_classes)
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
@@ -81,8 +88,12 @@ class ThreeLayerConvNet(object):
     # variable.                                                                #
     ############################################################################
     # about 3 lines of code (use the helper functions in layer_utils.py)
-    pass
-    ############################################################################
+    
+    out1, cache1 = conv_relu_pool_forward(X, theta1, theta1_0, conv_param, pool_param)
+    out2, cache2 =  affine_relu_forward(out1, theta2, theta2_0)
+    out3, cache3 = affine_forward(out2, theta3, theta3_0)
+    scores = out3
+    ###########################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
     
@@ -97,7 +108,16 @@ class ThreeLayerConvNet(object):
     # for self.params[k]. Don't forget to add L2 regularization!               #
     ############################################################################
     # about 12 lines of code
-    pass
+    loss, dout = softmax_loss(scores, y)
+    loss += np.sum(np.square([theta1,theta2,theta3])) *.5 * self.reg
+
+    dx3, grads['theta3'], grads["theta3_0"] = affine_backward(dout, cache3)
+    dx2, grads['theta2'], grads["theta2_0"] = affine_relu_backward(dx3, cache2)
+    dx1, grads['theta2'], grads["theta2_0"] = conv_relu_pool_backward(dx2, cache1)
+    grads['theta3'] += self.reg * theta3
+    grads['theta2'] += self.reg * theta2
+    grads['theta1'] += self.reg * theta1
+
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################

@@ -29,6 +29,7 @@ def affine_forward(x, theta, theta0):
   # 2 lines of code expected
   # X = np.reshape(x, (m, d))
   x_reshape = x.reshape(x.shape[0], theta.shape[0])
+#   out =  x_reshape @ theta + np.repeat(np.atleast_2d(theta0), m, axis=0)
   out =  x_reshape @ theta + theta0
   #out = x.reshape(x.shape[0], theta.shape[0]).dot(theta) + theta0
 
@@ -67,8 +68,7 @@ def affine_backward(dout, cache):
   #############################################################################
   # Hint: do not forget to reshape x into (m,d) form
   # 4-5 lines of code expected
-  # X = np.reshape(x, (m, d))
-  #dx = (dout @ theta.T).reshape(x.shape)
+    
   x_reshape = x.reshape(x.shape[0], theta.shape[0])
   dx = (dout @ theta.T).reshape(x.shape)
   dtheta = x_reshape.T @ dout
@@ -121,7 +121,6 @@ def relu_backward(dout, cache):
   #############################################################################
   # 1 line of code expected. Hint: use np.where
   dx = np.where(cache > 0, dout, 0)
-  pass
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -160,7 +159,10 @@ def dropout_forward(x, dropout_param):
     # Store the dropout mask in the mask variable.                            #
     ###########################################################################
     # 2 lines of code expected
-    pass
+    drop = 1 - p
+    mask = (np.random.rand(*x.shape) < drop) / drop 
+    out = x * mask
+    
     ###########################################################################
     #                            END OF YOUR CODE                             #
     ###########################################################################
@@ -169,7 +171,10 @@ def dropout_forward(x, dropout_param):
     # TODO: Implement the test phase forward pass for inverted dropout.       #
     ###########################################################################
     # 1 line of code expected
-    pass
+    
+    drop = 1 - p
+    out = x * (np.random.rand(*x.shape) < drop) 
+    
     ###########################################################################
     #                            END OF YOUR CODE                             #
     ###########################################################################
@@ -196,8 +201,7 @@ def dropout_backward(dout, cache):
     ###########################################################################
     # TODO: Implement the training phase backward pass for inverted dropout.  #
     ###########################################################################
-    # 1 line of code expected
-    pass
+    dx = dout * mask
     ###########################################################################
     #                            END OF YOUR CODE                             #
     ###########################################################################
